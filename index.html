@@ -3,16 +3,18 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Checklist Definitivo da Black Friday 2024</title>
+<title>BLACK FRIDAY</title>
 <style>
   :root{
-    --bg:#f7f9fc;
-    --paper:#ffffff;
-    --text:#172033;
-    --muted:#7a8497;
-    --panel:rgba(255,255,255,.94);
-    --border:#e7ebf2;
-    --shadow:0 14px 40px rgba(26,35,58,.10);
+    --bg:#f7f5f1;
+    --paper:#fffdf9;
+    --text:#1f1d1a;
+    --muted:#8a8178;
+    --panel:rgba(255,253,249,.94);
+    --border:#e7e0d7;
+    --shadow:0 16px 42px rgba(44,36,28,.10);
+    --gold:#b7955e;
+    --gold-soft:#d7c3a0;
   }
   *{box-sizing:border-box}
   html,body{
@@ -21,6 +23,10 @@
     background:var(--bg);color:var(--text);overflow:hidden
   }
   #app{position:relative;width:100vw;height:100vh}
+  #app:after{
+    content:"";position:fixed;inset:10px;pointer-events:none;z-index:40;
+    border:1px solid rgba(183,149,94,.12);border-radius:20px
+  }
   #stage{width:100%;height:100%;cursor:grab}
   #stage.dragging{cursor:grabbing}
   .topbar{
@@ -31,13 +37,22 @@
   }
   .brand{display:flex;align-items:center;gap:10px}
   .brandmark{
-    width:34px;height:34px;border-radius:11px;
-    background:linear-gradient(135deg,#3E6BFF 0%,#9A73F8 48%,#FF5A91 100%);
-    box-shadow:0 8px 18px rgba(90,105,255,.24)
+    width:34px;height:34px;border-radius:50%;
+    background:
+      radial-gradient(circle at 34% 32%,#fff7e9 0 9%,transparent 10%),
+      linear-gradient(145deg,#d8c29b 0%,#a9854f 48%,#6f5533 100%);
+    box-shadow:0 8px 20px rgba(111,85,51,.22);
+    border:1px solid rgba(255,255,255,.7)
   }
   .brandtext{line-height:1.05}
-  .brandtext strong{display:block;font-size:13px;letter-spacing:.02em}
-  .brandtext span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+  .brandtext strong{
+    display:block;font-family:Georgia,"Times New Roman",serif;font-size:15px;
+    letter-spacing:.16em;font-weight:700;color:#26211d
+  }
+  .brandtext span{
+    display:block;font-size:10px;color:var(--muted);margin-top:4px;
+    letter-spacing:.08em;text-transform:uppercase
+  }
 
   .toolbar{
     position:fixed;right:18px;bottom:18px;z-index:20;display:flex;gap:7px;align-items:center;
@@ -60,19 +75,19 @@
   svg{
     width:100%;height:100%;display:block;
     background:
-      radial-gradient(circle at 1px 1px, rgba(27,39,65,.07) 1px, transparent 1.2px) 0 0/22px 22px,
-      linear-gradient(#fafbfe,#f7f9fc);
+      radial-gradient(circle at 1px 1px, rgba(95,75,54,.055) 1px, transparent 1.15px) 0 0/24px 24px,
+      linear-gradient(180deg,#fbfaf7 0%,#f6f3ee 100%);
   }
   .link{
     fill:none;stroke-width:2.25;stroke-linecap:round;
     opacity:.88;filter:drop-shadow(0 1px 0 rgba(255,255,255,.85))
   }
   .node text{
-    font-size:13px;fill:#273248;dominant-baseline:middle;
+    font-size:13px;fill:#342f2a;dominant-baseline:middle;
     font-weight:520;letter-spacing:.002em
   }
-  .node.root text{font-size:21px;font-weight:850;fill:#141c2c}
-  .node.level1 text{font-weight:820;font-size:14px;fill:#1e293b}
+  .node.root text{font-size:25px;font-weight:700;fill:#1f1b17;font-family:Georgia,"Times New Roman",serif;letter-spacing:.12em}
+  .node.level1 text{font-weight:760;font-size:14px;fill:#2e2924;letter-spacing:.02em}
   .node .toggle{cursor:pointer}
   .node .dot{fill:#fff;stroke-width:2.5}
   .node .check{rx:4;ry:4;filter:drop-shadow(0 2px 4px rgba(25,32,50,.10))}
@@ -81,13 +96,13 @@
   .node:hover .dot{filter:drop-shadow(0 0 5px rgba(72,93,255,.25))}
   .shadow{filter:drop-shadow(0 5px 12px rgba(28,37,56,.08))}
   .node-card{
-    fill:rgba(255,255,255,.94);
-    stroke:#e8ebf1;stroke-width:1;
+    fill:rgba(255,253,249,.96);
+    stroke:#e7e0d7;stroke-width:1;
     rx:10;ry:10;
     filter:drop-shadow(0 5px 12px rgba(28,37,56,.07))
   }
   .node-card.l1{
-    fill:#fff;stroke-width:1.2;
+    fill:#fffdf9;stroke-width:1.2;
     filter:drop-shadow(0 7px 16px rgba(28,37,56,.09))
   }
 </style>
@@ -98,35 +113,36 @@
     <div class="brand">
       <div class="brandmark"></div>
       <div class="brandtext">
-        <strong>Checklist Black Friday</strong>
-        <span>Mapa estratégico interativo</span>
+        <strong>BLACK FRIDAY</strong>
+        <span>Mapa estratégico</span>
       </div>
+      <div style="width:1px;height:28px;background:linear-gradient(transparent,var(--gold-soft),transparent);margin-left:4px"></div>
     </div>
   </div>
   <svg id="stage" viewBox="0 0 2200 1500" preserveAspectRatio="xMidYMid meet">
     <g id="viewport"></g>
   </svg>
   <div class="toolbar">
-    <button id="collapse">Recolher</button>
-    <button id="expand">Expandir</button>
-    <button id="fit">Ajustar</button>
+    <button id="collapse">Visão geral</button>
+    <button id="expand">Expandir tudo</button>
+    <button id="fit">Centralizar</button>
     <button id="minus">−</button>
     <div class="zoom" id="zoomLabel">100%</div>
     <button id="plus">+</button>
   </div>
-  <div class="hint">Arraste para mover • Scroll para zoom • Clique nos círculos para abrir/recolher</div>
+  <div class="hint">Arraste para mover • Scroll para zoom • Clique nos círculos para abrir e recolher</div>
 </div>
 
 <script>
 const C = {
-  blue:"#3E6BFF", purple:"#9A73F8", pink:"#FF5A91", red:"#FF4B2B", orange:"#FFA500",
-  yellow:"#FFC400", green:"#7AD600", green2:"#2DC842", cyan:"#20C9D2", sky:"#0EA5E9",
-  blue2:"#4267FF", violet:"#9D74F7", coral:"#FF5A8B", red2:"#FF3E19", orange2:"#FF9D00"
+  blue:"#4466d8", purple:"#8b6ccf", pink:"#c96585", red:"#c75b45", orange:"#c88a2f",
+  yellow:"#c6a12a", green:"#7ca23b", green2:"#4f9b62", cyan:"#3b9fa4", sky:"#3b88ae",
+  blue2:"#5470c8", violet:"#896ec1", coral:"#bd6b83", red2:"#b9533e", orange2:"#bd8432"
 };
 
 const n=(text, children=[], opts={})=>({text,children,...opts});
 
-const data = n("CHECKLIST DEFINITIVO\nDA BLACK FRIDAY 2024",[
+const data = n("BLACK FRIDAY",[
   n("QUAL SEU OBJETIVO NESSA BLACK?",[
     n("VENDER MUITO",[
       n("Faz muito Desconto"), n("Aumenta Verba de Tráfego Pago")
@@ -591,41 +607,48 @@ function setCollapsed(node, val, keepRoot=true){
   (node.children||[]).forEach(c=>setCollapsed(c,val,keepRoot));
 }
 function applyTransform(){ viewport.setAttribute("transform",`translate(${tx},${ty}) scale(${scale})`); document.getElementById("zoomLabel").textContent=Math.round(scale*100)+"%"; }
-function fit(){
-  setCollapsed(data,false);
+function getVisibleBounds(){
   const {nodes}=layout();
-  const maxX=Math.max(...nodes.map(n=>n._x))+450;
-  const maxY=Math.max(...nodes.map(n=>n._y))+80;
-  const minY=Math.min(...nodes.map(n=>n._y))-80;
-  const vw=svg.clientWidth, vh=svg.clientHeight;
-  const sx=(vw-80)/maxX, sy=(vh-80)/(maxY-minY);
-  scale=Math.max(.18,Math.min(.85,Math.min(sx,sy)));
-  tx=50; ty=40-minY*scale; applyTransform(); render();
+  if(!nodes.length) return {minX:0,minY:0,maxX:1000,maxY:700};
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(node=>{
+    const lines=(node.text||"").split("
+");
+    const maxLine=Math.max(...lines.map(s=>s.length),1);
+    const charW=node.depth===0?13:node.depth===1?8.6:7.2;
+    const w=Math.max(90,Math.min(520,maxLine*charW+60));
+    const h=Math.max(38,lines.length*18+22);
+    minX=Math.min(minX,node._x-42);
+    maxX=Math.max(maxX,node._x+w);
+    minY=Math.min(minY,node._y-h/2-18);
+    maxY=Math.max(maxY,node._y+h/2+18);
+  });
+  return {minX,minY,maxX,maxY};
 }
-svg.addEventListener("mousedown",e=>{drag=true;sx=e.clientX;sy=e.clientY;stx=tx;sty=ty;svg.classList.add("dragging")});
-window.addEventListener("mouseup",()=>{drag=false;svg.classList.remove("dragging")});
-window.addEventListener("mousemove",e=>{if(!drag)return;tx=stx+(e.clientX-sx);ty=sty+(e.clientY-sy);applyTransform()});
-svg.addEventListener("wheel",e=>{
-  e.preventDefault();
-  const rect=svg.getBoundingClientRect(), mx=e.clientX-rect.left,my=e.clientY-rect.top;
-  const old=scale, factor=e.deltaY<0?1.12:.89;
-  scale=Math.max(.18,Math.min(2.5,scale*factor));
-  tx=mx-(mx-tx)*(scale/old); ty=my-(my-ty)*(scale/old); applyTransform();
-},{passive:false});
-
-document.getElementById("plus").onclick=()=>{scale=Math.min(2.5,scale*1.15);applyTransform()};
-document.getElementById("minus").onclick=()=>{scale=Math.max(.18,scale/1.15);applyTransform()};
-document.getElementById("collapse").onclick=()=>{ (data.children||[]).forEach(x=>x._collapsed=true); render(); fitCollapsed(); };
-document.getElementById("expand").onclick=()=>{ setCollapsed(data,false); render(); };
-document.getElementById("fit").onclick=fit;
-function fitCollapsed(){
-  const {nodes}=layout(); const maxX=Math.max(...nodes.map(n=>n._x))+460, maxY=Math.max(...nodes.map(n=>n._y))+100;
-  const minY=Math.min(...nodes.map(n=>n._y))-100, vw=svg.clientWidth,vh=svg.clientHeight;
-  scale=Math.max(.25,Math.min(1.1,Math.min((vw-100)/maxX,(vh-80)/(maxY-minY))));
-  tx=70; ty=40-minY*scale; applyTransform();
+function fitCurrent(pad=90){
+  const b=getVisibleBounds();
+  const vw=svg.clientWidth||1600, vh=svg.clientHeight||900;
+  const bw=Math.max(1,b.maxX-b.minX), bh=Math.max(1,b.maxY-b.minY);
+  scale=Math.max(.18,Math.min(1.45,Math.min((vw-pad*2)/bw,(vh-pad*2)/bh)));
+  tx=(vw-bw*scale)/2-b.minX*scale;
+  ty=(vh-bh*scale)/2-b.minY*scale;
+  applyTransform();
+}
+function fit(){
+  fitCurrent(90);
+}
+function showOverview(){
+  // Mantém o título central e todos os tópicos principais visíveis.
+  (data.children||[]).forEach(section=>{
+    section._collapsed=true;
+    (section.children||[]).forEach(child=>child._collapsed=false);
+  });
+  data._collapsed=false;
+  render();
+  requestAnimationFrame(()=>fitCurrent(110));
 }
 render();
-setTimeout(fitCollapsed,50);
+setTimeout(showOverview,80);
 </script>
 </body>
 </html>
