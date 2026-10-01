@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Checklist Definitivo da Black Friday 2024</title>
+<style>
+  :root{
+    --bg:#f7f9fc;
+    --paper:#ffffff;
+    --text:#172033;
+    --muted:#7a8497;
+    --panel:rgba(255,255,255,.94);
+    --border:#e7ebf2;
+    --shadow:0 14px 40px rgba(26,35,58,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;height:100%;
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+    background:var(--bg);color:var(--text);overflow:hidden
+  }
+  #app{position:relative;width:100vw;height:100vh}
+  #stage{width:100%;height:100%;cursor:grab}
+  #stage.dragging{cursor:grabbing}
+  .topbar{
+    position:fixed;top:18px;left:18px;z-index:25;
+    display:flex;align-items:center;gap:12px;
+    background:var(--panel);border:1px solid var(--border);border-radius:18px;
+    padding:10px 14px;box-shadow:var(--shadow);backdrop-filter:blur(12px)
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .brandmark{
+    width:34px;height:34px;border-radius:11px;
+    background:linear-gradient(135deg,#3E6BFF 0%,#9A73F8 48%,#FF5A91 100%);
+    box-shadow:0 8px 18px rgba(90,105,255,.24)
+  }
+  .brandtext{line-height:1.05}
+  .brandtext strong{display:block;font-size:13px;letter-spacing:.02em}
+  .brandtext span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+
+  .toolbar{
+    position:fixed;right:18px;bottom:18px;z-index:20;display:flex;gap:7px;align-items:center;
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:7px 9px;
+    box-shadow:var(--shadow);backdrop-filter:blur(12px)
+  }
+  .toolbar button{
+    border:0;background:#f6f8fb;color:#2d3648;border-radius:10px;padding:9px 12px;
+    cursor:pointer;font-weight:750;font-size:12px;transition:.18s ease
+  }
+  .toolbar button:hover{background:#eef2f8;transform:translateY(-1px)}
+  .toolbar .zoom{
+    min-width:58px;text-align:center;font-size:12px;font-weight:800;color:#465066;
+    background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 9px
+  }
+  .hint{
+    position:fixed;left:18px;bottom:18px;z-index:20;background:var(--panel);border:1px solid var(--border);
+    border-radius:14px;padding:9px 12px;font-size:11px;color:#7a8497;box-shadow:var(--shadow);backdrop-filter:blur(12px)
+  }
+  svg{
+    width:100%;height:100%;display:block;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(27,39,65,.07) 1px, transparent 1.2px) 0 0/22px 22px,
+      linear-gradient(#fafbfe,#f7f9fc);
+  }
+  .link{
+    fill:none;stroke-width:2.25;stroke-linecap:round;
+    opacity:.88;filter:drop-shadow(0 1px 0 rgba(255,255,255,.85))
+  }
+  .node text{
+    font-size:13px;fill:#273248;dominant-baseline:middle;
+    font-weight:520;letter-spacing:.002em
+  }
+  .node.root text{font-size:21px;font-weight:850;fill:#141c2c}
+  .node.level1 text{font-weight:820;font-size:14px;fill:#1e293b}
+  .node .toggle{cursor:pointer}
+  .node .dot{fill:#fff;stroke-width:2.5}
+  .node .check{rx:4;ry:4;filter:drop-shadow(0 2px 4px rgba(25,32,50,.10))}
+  .node a text{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+  .node:hover text{fill:#111827}
+  .node:hover .dot{filter:drop-shadow(0 0 5px rgba(72,93,255,.25))}
+  .shadow{filter:drop-shadow(0 5px 12px rgba(28,37,56,.08))}
+  .node-card{
+    fill:rgba(255,255,255,.94);
+    stroke:#e8ebf1;stroke-width:1;
+    rx:10;ry:10;
+    filter:drop-shadow(0 5px 12px rgba(28,37,56,.07))
+  }
+  .node-card.l1{
+    fill:#fff;stroke-width:1.2;
+    filter:drop-shadow(0 7px 16px rgba(28,37,56,.09))
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brandmark"></div>
+      <div class="brandtext">
+        <strong>Checklist Black Friday</strong>
+        <span>Mapa estratégico interativo</span>
+      </div>
+    </div>
+  </div>
+  <svg id="stage" viewBox="0 0 2200 1500" preserveAspectRatio="xMidYMid meet">
+    <g id="viewport"></g>
+  </svg>
+  <div class="toolbar">
+    <button id="collapse">Recolher</button>
+    <button id="expand">Expandir</button>
+    <button id="fit">Ajustar</button>
+    <button id="minus">−</button>
+    <div class="zoom" id="zoomLabel">100%</div>
+    <button id="plus">+</button>
+  </div>
+  <div class="hint">Arraste para mover • Scroll para zoom • Clique nos círculos para abrir/recolher</div>
+</div>
+
+<script>
+const C = {
+  blue:"#3E6BFF", purple:"#9A73F8", pink:"#FF5A91", red:"#FF4B2B", orange:"#FFA500",
+  yellow:"#FFC400", green:"#7AD600", green2:"#2DC842", cyan:"#20C9D2", sky:"#0EA5E9",
+  blue2:"#4267FF", violet:"#9D74F7", coral:"#FF5A8B", red2:"#FF3E19", orange2:"#FF9D00"
+};
+
+const n=(text, children=[], opts={})=>({text,children,...opts});
+
+const data = n("CHECKLIST DEFINITIVO\nDA BLACK FRIDAY 2024",[
+  n("QUAL SEU OBJETIVO NESSA BLACK?",[
+    n("VENDER MUITO",[
+      n("Faz muito Desconto"), n("Aumenta Verba de Tráfego Pago")
+    ]),
+    n("MELHORAR O LUCRO",[
+      n("Adquirir nova Base de Clientes"),
+      n("Vender mais Vezes para quem já Comprou"),
+      n("Vender de novo para quem comprou na Black")
+    ]),
+    n("REFLITA...",[
+      n("QUEM COMPRA BARATO NÃO VOLTA COMPRAR NO VALOR ORIGINAL")
+    ])
+  ],{color:C.blue}),
+
+  n("QUEM SAI NA FRENTE ESSA BLACK?",[
+    n("QUEM ANTECIPA"), n("QUEM ANALISA DADOS"), n("QUEM USA VÁRIOS CANAIS DE AQUISIÇÃO"), n("QUEM PLANEJA")
+  ],{color:C.purple}),
+
+  n("ANALISANDO O PASSADO",[
+    n("QUEM ESTUDA O PASSADO NÃO ERRA NO FUTURO"),
+    n("MÉDIA DE MÉTRICAS",[
+      n("INVESTIMENTO",[n("Média até Setembro")]), n("CPM"), n("CTR"), n("CPS"),
+      n("SESSÕES"), n("TAXA DE CONVERSÃO"), n("TICKET MÉDIO"), n("FATURAMENTO"), n("ROAS")
+    ]),
+    n("OSCILAÇÕES",[
+      n("GERAIS",[n("QUAL MÊS FOI O MELHOR?"),n("QUAL MÊS FOI O PIOR?")]),
+      n("MÉTRICAS",[
+        n("INVESTIMENTO",[n("QUAL MÊS FOI O MENOR?"),n("QUAL MÊS FOI O MAIOR?")]),
+        n("CPM",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")]),
+        n("CTR",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")]),
+        n("CPS",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")]),
+        n("SESSÕES",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")]),
+        n("TAXA DE CONVERSÃO",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")]),
+        n("TICKET MÉDIO",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")]),
+        n("FATURAMENTO",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")]),
+        n("ROAS",[n("QUAL MÊS FOI O PIOR?"),n("QUAL MÊS FOI O MELHOR?")])
+      ])
+    ]),
+    n("CONSTÂNCIA",[
+      n("MÊS PASSADO X RETRASADO ( QUAL % DE MELHORIA OU QUEDA? )",[
+        n("ROAS"),n("FATURAMENTO"),n("TICKET MÉDIO"),n("TAXA DE CONVERSÃO"),n("SESSÕES"),n("CPS")
+      ])
+    ]),
+    n("AÇÕES",[
+      n("QUAIS AÇÕES FORAM FEITAS NOS MELHORES MESES?"),
+      n("QUAIS AÇÕES DERAM MAIS RESULTADO ATÉ O MOMENTO?")
+    ]),
+    n("HISTÓRICO POR CANAL",[
+      n("QUAL CANAL TEM MAIOR REPRESENTATIVIDADE?"),
+      n("QUAL CANAL TEM MENOR REPRESENTATIVIDADE?"),
+      n("QUAL CANAL MAIS CRESCEU NOS ÚLTIMOS 6 MESES?"),
+      n("QUAL CANAL MAIS CAIU NOS ÚLTIMOS 6 MESES?"),
+      n("QUAL CANAL DEVERÍAMOS ENTRAR?")
+    ]),
+    n("ENTENDENDO O PRESENTE",[
+      n("QUAL MÉTRICA É NOSSA AGRESSORA PARA BATER A META?"),
+      n("QUAL PLANO DE AÇÃO PARA OTIMIZAR ELA?")
+    ])
+  ],{color:C.pink}),
+
+  n("O QUE NÃO PODE FALTAR EM\nUM PLANEJAMENTO?",[
+    n("Histórico Passado"), n("Analisar Representatividade de Canais",[n("Quanto cada canal representa em % no meu Faturamento?")]),
+    n("Analisar Crescimento % Mensal"), n("Se Basear nas Métricas Passadas"), n("Descobrir as Métricas Ideais"),
+    n("Criar Ações por Métricas"), n("Distribuir % por Canais"), n("Implantar no Cronograma Mensal"),
+    n("2 Metas ( Aquisição x Retenção )"), n("2 Metas ( Pessimista e Otimista )")
+  ],{color:C.red}),
+
+  n("O QUE PRECISO PLANEJAR?",[
+    n("META AQUISIÇÃO",[
+      n("Funil"),n("KPIs")
+    ]),
+    n("META RETENÇÃO",[
+      n("Funil",[n("Ação"),n("Produtos"),n("Canais")]),
+      n("KPIs",[n("INVESTIMENTO"),n("CPS"),n("SESSÕES"),n("TAXA DE CONVERSÃO"),n("PEDIDOS"),n("TICKET MÉDIO"),n("FATURAMENTO"),n("ROAS")])
+    ])
+  ],{color:C.orange}),
+
+  n("FUNIL HORIZONTAL X VERTICAL",[
+    n("Categorias",[
+      n("Montagem",[n("Categoria 5"),n("Categoria 4"),n("Categoria 3"),n("Categoria 2"),n("Categoria 1")]),
+      n("O que devo Revisar?",[
+        n("Divulgação",[n("ADS"),n("CRM"),n("BANNERS")]),
+        n("Revisar Filtros das Categorias"),
+        n("Revisar se a Ordem está por Mais Vendidos"),
+        n("Seleção de até no Máximo 15 Produtos por Categoria")
+      ])
+    ]),
+    n("Produtos",[
+      n("Montagem",[n("Produto 5"),n("Produto 4"),n("Produto 3"),n("Produto 2"),n("Produto 1")]),
+      n("O que devo Revisar?",[
+        n("Divulgação",[n("ADS"),n("CRM"),n("BANNERS")]),
+        n("Revisar PDP"),n("Revisar Oferta")
+      ])
+    ])
+  ],{color:C.yellow}),
+
+  n("AS 5 PRIORIDADES DO E-COMMERCE",[
+    n("① PÁGINA DE PRODUTO",[n("Como seria uma Página de\nProduto de Alta Conversão?")]),
+    n("② CRIATIVO",[
+      n("Anúncios Narrativos",[
+        n("DORES"),n("SOLUÇÕES"),n("BENEFÍCIOS"),n("COMBINAÇÕES"),n("ESTRUTURA RECOMENDADA"),
+        n("PLANILHA DE I.A PARA CRIATIVOS",[],{url:"https://docs.google.com/spreadsheets/"})
+      ])
+    ]),
+    n("③ OFERTA",[
+      n("Preço"),n("Prazo"),n("Frete"),n("Gatilhos"),n("Incentivo ( Cupom Primeira Compra )"),
+      n("Vantagens ( Cashback )"),n("Prova Social")
+    ]),
+    n("④ CREDIBILIDADE",[
+      n("Temos uma Página ReclameAqui?"),
+      n("O quanto exploramos a História da Marca?"),
+      n("Temos Prova Social em Home,\nCategoria e PDP?"),
+      n("Temos Anúncios rodando com\nProva Social, Unboxing, UGCs, e\nBastidores?"),
+      n("Estamos explorando Números da\nLoja como: Pedidos enviados por\nMês, OTD, NPS...")
+    ]),
+    n("⑤ PRODUTO",[
+      n("Produto X Taxa de Conversão"),n("Produto Isca"),n("Produto Esteira"),n("Estrutura de Mídia"),n("Régua de Conversão")
+    ])
+  ],{color:C.green}),
+
+  n("AÇÕES",[
+    n("COMO CRIAR UMA AÇÃO?"),
+    n("OS 2 PILARES",[
+      n("AQUISIÇÃO",[n("Quais produtos escolheremos para eles?"),n("Qual ação teremos para o eles?"),n("Quais canais usaremos para Divulgação?")]),
+      n("RETENÇÃO",[n("Quais produtos escolheremos para eles?"),n("Qual ação teremos para eles?"),n("Quais canais usaremos para Divulgação?")])
+    ]),
+    n("CUPONS",[
+      n("REGRESSIVO",[n("Ideal para Começo do Mês"),n("20% de Desconto as Próximas 24 Horas"),n("15% de Desconto nos Próximos 2 Dias"),n("10% de Desconto nos Próximos 5 Dias")]),
+      n("PROGRESSIVO",[n("Ideal para Aumentar Ticket Médio"),n("R$ 50,00 nas compras acima de XX"),n("R$ 100,00 nas compras acima de XX"),n("R$ 150,00 nas compras acima de XX")]),
+      n("PRIMEIRA COMPRA",[n("40% do Valor do CAC Atual")])
+    ]),
+    n("FRETE",[
+      n("GRÁTIS ACIMA DE",[n("POR REGIÃO",[
+        n("SUL",[n("ACIMA DE 5% DO TICKET MÉDIO REGIONAL")]),
+        n("SUDESTE",[n("ACIMA DE 5% DO TICKET MÉDIO REGIONAL")]),
+        n("CENTRO-OESTE",[n("ACIMA DE 10% DO TICKET MÉDIO REGIONAL")]),
+        n("NORDESTE",[n("ACIMA DE 15% DO TICKET MÉDIO REGIONAL")]),
+        n("NORTE",[n("ACIMA DE 15% DO TICKET MÉDIO REGIONAL")])
+      ])]),
+      n("FIXO A PARTIR DE",[n("POR REGIÃO")]),
+      n("PRAZO MENOR",[n("Desconto no Frete mais Rápido")])
+    ]),
+    n("BOGO",[n("Buy One Get One",[n("Cliente compra um Produto e ganha Outro"),n("Não quebra a percepção de Valor do Produto")])]),
+    n("AÇÕES VALIDADAS",[
+      n("CUPOM SECRETO",[n("Produto Específico que ativa um Cupom no Carrinho")]),
+      n("CAÇA AO CUPOM",[n("Cupom Escondido em alguns Produtos Específicos do Site")]),
+      n("CLIENTE PRIME",[n("Clientes que já compraram 3x ou mais não pagam Frete e ganham um Brinde Extra")])
+    ])
+  ],{color:C.green2}),
+
+  n("CANAIS",[
+    n("ADS",[
+      n("META ADS",[
+        n("Criativos Temáticos Black"),
+        n("Layer nas Campanhas de Catálogo"),
+        n("Gatilhos",[n("Semana Y"),n("Os 100 Primeiros"),n("Apenas X Horas"),n("Apenas X Produtos")]),
+        n("Cronômetro em Vídeo",[n("Vídeo Apenas"),n("Dentro do Carrossel")]),
+        n("Decentralização",[n("Regiões"),n("Principais Estados em Capitais"),n("Por Horário"),n("Por Dia da Semana"),n("Por Quinzena")]),
+        n("Orçamento",[n("Por Quinzena"),n("Por Semana"),n("Por Dia da Semana"),n("Por Horário"),n("Por Público",[n("Novo"),n("Recorrente")]),n("Por Produto"),n("Por Categoria")]),
+        n("Funil de Criativos",[
+          n("PAGE VIEW",[n("Recuperar para Categorias")]),
+          n("VIEW CONTENT",[n("Focar em Produtos Principais")]),
+          n("CART",[n("Cupom Desconto")]),
+          n("CHECKOUT",[n("Eliminar Objeções")]),
+          n("SEARCH",[n("Mandar para Categoria de Produtos Mais Buscados")])
+        ])
+      ]),
+      n("GOOGLE ADS",[
+        n("Checklist",[
+          n("Sitelinks com % de Desconto Máximo",[n("Até 78% de Desconto..."),n("Deixa pelo menos 1 Produto com Desconto Agressivo ( Curva C )")]),
+          n("Sitelinks com Gatilhos"),
+          n("Sitelinks com Nome Black Friday"),
+          n("Títulos com % de Desconto Máximo",[n("Até 78% de Desconto..."),n("Deixa pelo menos 1 Produto com Desconto Agressivo ( Curva C )")]),
+          n("Títulos com nome Black Friday"),
+          n("Títulos com Gatilhos",[n("Dia X"),n("Semana Y"),n("Os 100 Primeiros"),n("Apenas X Horas"),n("Apenas X Produtos")])
+        ]),
+        n("Estrutura",[
+          n("PMAX",[
+            n("Melhorar o Conteúdo da Campanha Pmax ( Foco na Otimização Boa )"),
+            n("Criar Pmax por Categorias"),
+            n("Campanha Pmax com Produtos Selecionados ( Alta Conversão )"),
+            n("Criar Pmax Excluindo as Principais Regiões ( Decentralização )")
+          ]),
+          n("LINKS",[n("Campanha Institucional"),n("Campanha Top Categorias"),n("Campanha Top Produtos")]),
+          n("VÍDEO",[n("Campanha Aquisição de Sessões Novos Usuários"),n("Campanha Retenção ( Remarketing )")])
+        ])
+      ])
+    ]),
+    n("CRM",[
+      n("Réguas de Relacionamento",[n("Newsletter"),n("Abandono de Carrinho"),n("Compradores")]),
+      n("Bases",[
+        n("Base RFM",[n("Base nunca Comprou"),n("Base Comprou 1x"),n("Base Comprou 2x"),n("Base Comprou 3x ou +")]),
+        n("Base por Ticket Médio",[n("Até R$ 100"),n("Até R$ 200"),n("Até R$ 300"),n("Acima de R$ 301")]),
+        n("Base por Tipo de Categoria",[n("Produto da Categoria 1"),n("Produto da Categoria 2"),n("Produto da Categoria 3"),n("Produto da Categoria 4")]),
+        n("Base por Tipo de Produto",[n("Comprou Produto W"),n("Comprou Produto X"),n("Comprou Produto Y"),n("Comprou Produto Z")]),
+        n("Base por Meio de Pagamento",[n("Pagou com PIX"),n("Pagou com Cartão")]),
+        n("Base por Tipo de Envio",[n("Envio Barato"),n("Envio Rápido")]),
+        n("Base por Região",[n("Base do Sul"),n("Base Sudeste"),n("Base Centro Oeste"),n("Base Norte"),n("Base Nordeste")]),
+        n("Base por Dia de Compra",[n("Dia 1 a 5"),n("Dia 6 a 10"),n("Dia 11 a 15"),n("Dia 16 a 20"),n("Dia 21 a 25"),n("Dia 26 a 31")]),
+        n("Base por Dia da Semana",[n("Comprou Segunda"),n("Comprou Terça"),n("Comprou Quarta"),n("Comprou Quinta"),n("Comprou Sexta"),n("Comprou Sábado"),n("Comprou Domingo")]),
+        n("Base por Horário",[n("Comprou de Manhã"),n("Comprou de Tarde"),n("Comprou de Noite"),n("Comprou de Madrugada")]),
+        n("Base por Tipo de Compra",[n("Preço Cheio"),n("Promoção")])
+      ]),
+      n("Ideias para E-Mail",[n("Itens mais vistos da Semana"),n("Por Solução"),n("Por Dor"),n("Categorias por Signo")])
+    ]),
+    n("SOCIAL",[
+      n("Crescimento",[n("Impulsionamento com 4% do Budget do Mês nos Principais Posts Orgânicos Validados")]),
+      n("Otimização",[
+        n("Topo",[n("Visitantes do Perfil x Seguidores no Período",[n("Taxa de Conversão de Seguidores")])]),
+        n("Meio",[n("Investimento x Seguidores no Período",[n("Custo por Seguidor")])]),
+        n("Fim",[n("Seguidores Totais x Compras do Social",[n("Taxa de Conversão da Ação")])])
+      ]),
+      n("Revisar",[
+        n("Link da Bio com Pixel"),n("Link para Categorias Estratégicas ( Produtos para Primeira Compra )"),
+        n("Link para Grupo VIP Black"),n("Criar Destaques para Black"),n("Intensificar Conteúdo"),
+        n("Promover Desafios com Seguidores ( Descubra os Produtos que estarão na Black )"),
+        n("Caixa de Perguntas ( O que você quer ver na Black? )"),
+        n("Caixa de Perguntas ( O que você mais espera na Black? Cupom ou Frete Grátis? )")
+      ])
+    ]),
+    n("INFLUENCERS",[
+      n("Usar o Scrapegram para descobrir quem é Influente e te segue"),
+      n("Mapear Influencers do Mercado que seus Seguidores Seguem..."),
+      n("Preparar um Press Kit Black para enviar para Influencers Mapeadas"),
+      n("Organizar Datas de Postagem para ter Picos Constantes")
+    ]),
+    n("GRUPOS DE WHATSAPP",[
+      n("01. Modelos de Captação",[n("OnGoing",[n("É a captação frequente, um canal que sempre vai estar trazendo pessoas para dentro do grupo")]),n("OnTime",[n("É a captação específica para alguma ação")])]),
+      n("02. Modelo OnGoing (contínua)"),
+      n("03. Modelo OnTime (uma vez)",[
+        n("Objetivo:",[n("Trazer o máximo de pessoas qualificadas possível para dentro do grupo")]),
+        n("Criativos:",[n("Vídeo sempre traz um melhor resultado")]),
+        n("Modelo de LP",[n("Direto"),n("Captação com Formulário")]),
+        n("P. Novo",[n("Interesse e Look a Like que mais funcionam na conta"),n("Separar por região",[n("Top Região"),n("Brasil / Top Região")])]),
+        n("Estrutura de Campanha:",[
+          n("P. Remarketing",[n("Envolvimento IG 365D"),n("PageView 180D"),n("ViewContent + Visitou IG 120D"),n("ViewContent + Visitou IG 60D"),n("ViewContent + Visitou IG 30D")]),
+          n("75% Novos / 25% Remarketing")
+        ])
+      ])
+    ]),
+    n("LIVESHOP",[
+      n("Estrutura do evento",[
+        n("Tempo:",[n("Depende - mas na maioria das vezes, 7d no máximo")]),
+        n("Definir data do evento"),n("Nome do evento"),
+        n("Lista de produtos - de 20 a 50 itens, a depender do nicho",[n("Dentre esses, escolher de 3 a 6 itens que serão o nosso “PRODUTO ISCA” da Black, itens que utilizaremos na próxima fase")]),
+        n("Escolha de Influenciadores"),
+        n("Equipe envolvida na live",[n("Apresentador"),n("Suporte/Atendimento"),n("Filmagem"),n("Apoio")])
+      ]),
+      n("Captação",[
+        n("Página de Captura que leva o lead para um grupo de Whatsapp",[n("Copy da página"),n("Design da página"),n("Vídeo da página")]),
+        n("Configuração de Grupos de WhatsApp",[n("Capa"),n("Mensagem de boas vindas"),n("Configuração de Plataforma para administração dos grupos"),n("Definir 2 administradores para os grupos")]),
+        n("Pesquisa",[n("Criar pesquisa no Forms"),n("Mensagem para disparar a pesquisa no grupo de WhatsApp")]),
+        n("Vídeos de Captura",[n("Vídeo 1 - Genérico, institucional, convidando para a live"),n("Vídeo 2 - PRODUTO ISCA 1"),n("Vídeo 3 - PRODUTO ISCA 2"),n("Vídeo 4 - PRODUTO ISCA 3")]),
+        n("E-mail marketing"),n("E-commerce",[n("Banner comunicando e convidando para a LIVE, com link da página de captura")])
+      ]),
+      n("Aquecimento",[
+        n("Instagram",[
+          n("Stories - o aquecimento se inicia de 5 a 7 dias antes do evento.",[
+            n("Faltando 5 dias - Ir mostrando os itens que terão na black, sem revelar preço"),
+            n("Faltando 4 dias - Buscar aumento de interação do público com enquetes e caixinha de perguntas"),
+            n("Faltando 3 dias - Spoiler de preços, focando sempre nos itens de melhores descontos"),
+            n("Faltando 2 dias - Continuar com o aquecimento mostrar provas sociais para aumentar a credibilidade do negócio"),
+            n("Faltando 1 dia - Pressão total, abrir no mínimo 10 spoliers e utilizar a escassez, dizendo que os estoques serão limitados"),
+            n("No dia da live - Manter a pressão e lembrar sempre o horário da Live")
+          ]),
+          n("FEED - Faltando 5 dias, todos os dias postar um spoiler de oferta diferente",[n("Faltam 5 dias - Item 01"),n("Faltam 4 dias - Item 02"),n("Faltam 3 dias - Item 03"),n("Faltam 2 dias - Item 04"),n("É amanhã - Item 05"),n("É Hoje - Item 06")])
+        ]),
+        n("E-commerce",[n("Quando faltar 3 dias, comunicar via banner antecipando e sugerindo que o usuário faça o cadastro")]),
+        n("WhatsApp - Criar sequência de mensagens de antecipação até o dia da live",[
+          n("Faltam 4 dias",[n("Mensagem 01 - Faltam 4 dias")]),
+          n("Faltando 3 dias",[n("Mensagem 02 - Faltam 3 dias, cadastre-se em nosso site")]),
+          n("Faltando 2 dia",[n("Mensagem 03 - Faltam 2 dias, olha o que te espera (spolieres)")]),
+          n("Faltando 1 dia",[n("Mensagem 04 - É amanhã, ative todas as notificações"),n("Mensagem 05 - Está chegando o grande dia, coloque o despertador para aproveitar essas promoções (spolieres)")]),
+          n("No dia da Live",[n("Mensagem 06 - Chegou o grande dia, é hoje às 20 horas"),n("Mensagem 07 - Faltam apenas 1 hora"),n("Mensagem 08 - Estamos ao vivo (mandar o link da live)")])
+        ])
+      ]),
+      n("Live/Pós-Live",[
+        n("Toda a comunicação deve ser voltada para as ofertas do Black, explorando ao máximo gatilhos de escassez."),
+        n("Surgir sempre em black, períodos mais curtos de ofertas de live (2 a 4 dias)"),
+        n("Instagram",[
+          n("Ao vivo",[n("Durante a live, fixar dizendo que os links para entrar no site ou para entrar nos grupos, está na Bio"),n("Deixar uma pessoa respondendo exclusivamente os comentários do instagram")]),
+          n("Stories de pós live",[n("Fazer um Stories para cada item que foi mostrado na live, com link do e-commerce")]),
+          n("FEED de pós live",[n("Carrosséis com os produtos mostrados na Live"),n("Reels com trechos da live"),n("Reels de produtos")]),
+          n("Anúncios",[n("Anúncios de emergência, comunicando as ofertas do black utilizando gatilhos de escassez.")])
+        ]),
+        n("WhatsApp",[
+          n("Disparos pós-live (Considerando Black de 2 dias)",[
+            n("Quando acabar a live",[n("Você tem apenas 48 horas para aproveitar")]),
+            n("Dia posterior a LIVE",[n("10h O nosso Black à todo vapor, e você precisa ser rápido"),n("14h - Olha essas oportunidades"),n("16h - O tempo está passando, e ainda tem essa oportunidade"),n("19h - Você tem pouco mais de 24h para aproveitar")]),
+            n("Dois dias depois (último dia de ofertas)",[n("9h - Hoje é sua última chance"),n("12h - Restam menos de 12 horas"),n("16h - Olha o que você vai perder"),n("20h - Restam menos de 4h"),n("22h - Última chamada")])
+          ])
+        ]),
+        n("E-commerce",[n("Recuperação de vendas"),n("Banners Comunicando o Black")])
+      ])
+    ]),
+    n("PROGRAMÁTICA",[n("https://ads.yandex.com/ecomm_pt",[],{url:"https://ads.yandex.com/ecomm_pt"})]),
+    n("MÍDIA OOH",[n("https://eletromidia.com.br/",[],{url:"https://eletromidia.com.br/"}),n("https://neoh.com.br/",[],{url:"https://neoh.com.br/"})])
+  ],{color:C.cyan}),
+
+  n("ESTRUTURA",[
+    n("TEMATIZAÇÃO",[
+      n("Home",[n("Banner Principal"),n("Banner Régua"),n("Vitrine Especial"),n("Categoria Especial Black Friday"),n("Cores do Tema / Botões"),n("Produtos com Selo de Black")]),
+      n("Categorias",[n("Banner Régua"),n("Filtro por Desconto"),n("Filtro por Preço"),n("Contador Regressivo")]),
+      n("PDP",[n("Banner Régua"),n("Atendimento Whatsapp na Descrição com Link"),n("Contador Regressivo")])
+    ]),
+    n("CATEGORIZAÇÃO",[
+      n("Por Solução",[n("Ex: Organize sua Cozinha"),n("Cor"),n("Tamanho")]),
+      n("Mais Vendidos",[n("No Máximo 15 Produtos")]),
+      n("Outlet / Black Friday",[
+        n("Por Desconto",[n("Até 10%"),n("Até 20%"),n("Até 50%"),n("etc")]),
+        n("Por Valor",[n("Até R$ 100"),n("Até R$ 200"),n("Até R$ 300"),n("etc")])
+      ]),
+      n("Presente",[n("Por Valor",[n("Até R$ 100"),n("Até R$ 200"),n("Até R$ 300"),n("etc")])])
+    ]),
+    n("LANDING PAGES",[
+      n("CUPOM",[],{url:"https://www.lojuidostore.com.br/institucional/cupom-de-desconto"}),
+      n("RECLAME AQUI",[],{url:"https://querodobra.com.br/reclame-aqui/"}),
+      n("GRUPO VIP",[],{url:"https://lp.imigrareau.com/ads-grupo-vip/"})
+    ])
+  ],{color:C.sky}),
+
+  n("PÚBLICO",[
+    n("Tem uma Verba Limitada, você precisa entender isso, e criar uma estratégia de oferta que consiga trazer ele para você o quanto antes..."),
+    n("O que precisamos entender deles?",[
+      n("Interesses",[n("Quais dores ele tem?"),n("O que ele mais gosta no site?"),n("Qual Produto ele mais Espera na Black?")]),
+      n("Comercial",[n("O que Motiva ele Comprar?"),n("O que é um Incentivo pra Ele?",[n("Cupom"),n("Frete"),n("Envio Rápido")]),n("O que Desmotiva ele Comprar?")])
+    ])
+  ],{color:C.blue2}),
+
+  n("OTIMIZAÇÕES",[
+    n("Primeira Quinzena",[n("Validar o Testes e acompanhar a Meta para chegar no fim da Quinzena com pelo menos 50% da Meta batida.")]),
+    n("Segunda Quinzena",[n("Em caso de Meta Batida 50% propor mais orçamento e acelerar"),n("No caso de Meta não Batida, ajustar o orçamento e propor Plano B")]),
+    n("Orçamento",[n("Enquanto estiver dando ROAS subir orçamento de 25 em 25% a cada dia.")]),
+    n("Meta Ads",[n("Analisar Frequência para Aumentar Verba")]),
+    n("Google Ads",[n("Analisar o Valor Gasto do Dia Anterior e ver se teve Cobertura Suficiente"),n("Ajustar pra cima o orçamento em caso de Cobertura Suficiente e Roas Aceitável")]),
+    n("Atingimento de Meta",[
+      n("Atingimento de Meta",[n("Notificar para Ajuste de Verba"),n("Estudar os Melhores Canais"),n("Ampliar Budget nos Melhores Canais"),n("Analisar as Melhores Campanhas"),n("Ampliar Budget nas Melhores Campanhas"),n("Acompanhar o Resultado e Métricas Cruciais após Ajuste"),n("Métricas")]),
+      n("Não Atingimento de Meta",[n("Notificar sobre o Não Atingimento"),n("Estudar os Canais"),n("Criar Proposta de Otimização de Canais"),n("Analisar as Campanhas"),n("Criar Proposta de Otimização de Campanhas"),n("Acompanhar o Resultado e Métricas Cruciais após Ajuste"),n("Métricas",[n("Sessões"),n("Ticket Médio"),n("Taxa de Conversão"),n("Faturamento")])])
+    ])
+  ],{color:C.violet}),
+
+  n("PLANEJAMENTO PRONTO",[
+    n("Apresentação / planejamento",[],{url:"https://docs.google.com/presentation/"})
+  ],{color:C.coral}),
+
+  n("SITUAÇÕES ( BLACKROOM )",[
+    n("AUMENTO DE CPS E REDUÇÃO DE SESSÕES",[n("Aula"),n("Material")]),
+    n("QUEDA DE TICKET MÉDIO",[n("Aula"),n("Arquivo")]),
+    n("QUEDA DE TAXA DE CONVERSÃO",[n("Aula"),n("Arquivo")])
+  ],{color:C.red2}),
+
+  n("FERRAMENTAS",[
+    n("Konfidency",[],{url:"https://www.konfidency.com.br/"}),
+    n("Nemu",[],{url:"https://www.nemu.com.br/"}),
+    n("Pland",[],{url:"https://pland.com.br/"}),
+    n("Vidget",[],{url:"https://vidget.com.br/"}),
+    n("Zoppy",[],{url:"https://www.zoppy.com.br/"}),
+    n("Mailbiz",[],{url:"https://www.mailbiz.com.br/"}),
+    n("Basework",[],{url:"https://www.baseworks.com.br/"}),
+    n("Dom Pagamentos",[],{url:"https://dompagamentos.com.br/"})
+  ],{color:C.orange2})
+]);
+
+let id=0;
+function prep(node, depth=0, inherited=null){
+  node.id=++id; node.depth=depth;
+  node.branchColor = depth===1 ? node.color : (inherited || node.color || C.cyan);
+  (node.children||[]).forEach(c=>prep(c,depth+1,node.branchColor));
+}
+prep(data);
+
+const svg=document.getElementById("stage");
+const viewport=document.getElementById("viewport");
+let scale=0.76, tx=180, ty=165;
+let drag=false, sx=0, sy=0, stx=0, sty=0;
+
+function visibleChildren(n){ return n._collapsed ? [] : (n.children||[]); }
+function leafCount(n){
+  const ch=visibleChildren(n);
+  if(!ch.length) return 1;
+  return ch.reduce((s,c)=>s+leafCount(c),0);
+}
+function layout(){
+  const nodes=[], links=[];
+  const rowH=42, colW=320;
+  let yCounter=0;
+  function walk(node, x){
+    const ch=visibleChildren(node);
+    let y;
+    if(!ch.length){
+      y=yCounter*rowH; yCounter++;
+    } else {
+      const childYs=ch.map(c=>walk(c,x+colW));
+      y=(childYs[0]+childYs[childYs.length-1])/2;
+    }
+    node._x=x; node._y=y;
+    nodes.push(node);
+    ch.forEach(c=>links.push({s:node,t:c,color:c.branchColor}));
+    return y;
+  }
+  walk(data,0);
+  return {nodes,links};
+}
+function esc(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function render(){
+  const {nodes,links}=layout();
+  const xs=nodes.map(n=>n._x), ys=nodes.map(n=>n._y);
+  const minY=Math.min(...ys), maxY=Math.max(...ys);
+  let out='';
+  links.forEach(l=>{
+    const x1=l.s._x+12, y1=l.s._y, x2=l.t._x-12, y2=l.t._y;
+    const mid=x1+(x2-x1)*.45;
+    out += `<path class="link" stroke="${l.color}" d="M${x1},${y1} C${mid},${y1} ${mid},${y2} ${x2},${y2}"/>`;
+  });
+  nodes.forEach(node=>{
+    const cls=node.depth===0?'root':node.depth===1?'level1':'';
+    const c=node.branchColor || "#333";
+    const has=(node.children||[]).length>0;
+    const lines=node.text.split('\n');
+    const textX=18;
+    let tspan='';
+    lines.forEach((ln,i)=>{
+      const dy = i===0 ? (lines.length>1?-7:0) : 16;
+      tspan += `<tspan x="${textX}" ${i===0?`dy="${dy}"`:`dy="16"`}>${esc(ln)}</tspan>`;
+    });
+    let prefix='';
+    if(node.depth>1){
+      prefix=`<rect class="check" x="-7" y="-7" width="14" height="14" fill="${c}" opacity=".95"/><path d="M-4,0 l3,3 5,-6" stroke="white" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }else if(node.depth===1){
+      prefix=`<circle class="dot" cx="0" cy="0" r="6" stroke="${c}"/>`;
+    }
+    const toggle = has ? `<circle class="toggle dot" data-id="${node.id}" cx="-16" cy="0" r="6" stroke="${c}"/><path class="toggle" data-id="${node.id}" d="M-19,0 h6 ${node._collapsed?'M-16,-3 v6':''}" stroke="${c}" stroke-width="1.8" fill="none"/>` : '';
+    let text = `<text x="${textX}" y="0">${tspan}</text>`;
+    if(node.url) text=`<a href="${node.url}" target="_blank" rel="noopener">${text}</a>`;
+
+    const maxLine = Math.max(...lines.map(s=>s.length));
+    const approxW = Math.max(72, Math.min(430, maxLine * (node.depth===0 ? 11 : node.depth===1 ? 8.2 : 7.0) + 34));
+    const cardH = Math.max(30, lines.length * 17 + 14);
+    let card = "";
+    if(node.depth===0){
+      card = `<rect class="node-card l1" x="8" y="${-cardH/2}" width="${approxW}" height="${cardH}" rx="14" ry="14" stroke="${c}" stroke-opacity=".18"/>`;
+    } else if(node.depth===1){
+      card = `<rect class="node-card l1" x="8" y="${-cardH/2}" width="${approxW}" height="${cardH}" rx="11" ry="11" stroke="${c}" stroke-opacity=".22"/>`;
+    } else if((node.children||[]).length>0){
+      card = `<rect class="node-card" x="8" y="${-cardH/2}" width="${approxW}" height="${cardH}" rx="9" ry="9"/>`;
+    }
+
+    out += `<g class="node ${cls}" transform="translate(${node._x},${node._y})">${card}${toggle}${prefix}${text}</g>`;
+  });
+  viewport.innerHTML=out;
+  viewport.setAttribute("transform",`translate(${tx},${ty}) scale(${scale})`);
+  document.getElementById("zoomLabel").textContent=Math.round(scale*100)+"%";
+  viewport.querySelectorAll(".toggle").forEach(el=>el.addEventListener("click",e=>{
+    e.stopPropagation();
+    const node=findById(data,+el.dataset.id);
+    node._collapsed=!node._collapsed; render();
+  }));
+}
+function findById(n,i){ if(n.id===i)return n; for(const c of n.children||[]){const r=findById(c,i); if(r)return r;} }
+function setCollapsed(node, val, keepRoot=true){
+  if(node.depth>0 || !keepRoot) node._collapsed=val;
+  (node.children||[]).forEach(c=>setCollapsed(c,val,keepRoot));
+}
+function applyTransform(){ viewport.setAttribute("transform",`translate(${tx},${ty}) scale(${scale})`); document.getElementById("zoomLabel").textContent=Math.round(scale*100)+"%"; }
+function fit(){
+  setCollapsed(data,false);
+  const {nodes}=layout();
+  const maxX=Math.max(...nodes.map(n=>n._x))+450;
+  const maxY=Math.max(...nodes.map(n=>n._y))+80;
+  const minY=Math.min(...nodes.map(n=>n._y))-80;
+  const vw=svg.clientWidth, vh=svg.clientHeight;
+  const sx=(vw-80)/maxX, sy=(vh-80)/(maxY-minY);
+  scale=Math.max(.18,Math.min(.85,Math.min(sx,sy)));
+  tx=50; ty=40-minY*scale; applyTransform(); render();
+}
+svg.addEventListener("mousedown",e=>{drag=true;sx=e.clientX;sy=e.clientY;stx=tx;sty=ty;svg.classList.add("dragging")});
+window.addEventListener("mouseup",()=>{drag=false;svg.classList.remove("dragging")});
+window.addEventListener("mousemove",e=>{if(!drag)return;tx=stx+(e.clientX-sx);ty=sty+(e.clientY-sy);applyTransform()});
+svg.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const rect=svg.getBoundingClientRect(), mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const old=scale, factor=e.deltaY<0?1.12:.89;
+  scale=Math.max(.18,Math.min(2.5,scale*factor));
+  tx=mx-(mx-tx)*(scale/old); ty=my-(my-ty)*(scale/old); applyTransform();
+},{passive:false});
+
+document.getElementById("plus").onclick=()=>{scale=Math.min(2.5,scale*1.15);applyTransform()};
+document.getElementById("minus").onclick=()=>{scale=Math.max(.18,scale/1.15);applyTransform()};
+document.getElementById("collapse").onclick=()=>{ (data.children||[]).forEach(x=>x._collapsed=true); render(); fitCollapsed(); };
+document.getElementById("expand").onclick=()=>{ setCollapsed(data,false); render(); };
+document.getElementById("fit").onclick=fit;
+function fitCollapsed(){
+  const {nodes}=layout(); const maxX=Math.max(...nodes.map(n=>n._x))+460, maxY=Math.max(...nodes.map(n=>n._y))+100;
+  const minY=Math.min(...nodes.map(n=>n._y))-100, vw=svg.clientWidth,vh=svg.clientHeight;
+  scale=Math.max(.25,Math.min(1.1,Math.min((vw-100)/maxX,(vh-80)/(maxY-minY))));
+  tx=70; ty=40-minY*scale; applyTransform();
+}
+render();
+setTimeout(fitCollapsed,50);
+</script>
+</body>
+</html>
